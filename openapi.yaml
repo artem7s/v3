@@ -1,1 +1,996 @@
+openapi: 3.0.0
+info:
+  title: Claims Public API
+  version: 0.1.0
+servers:
+  - url: https://api.sevensenders.com/v3  
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 
+security:
+  - bearerAuth: [] 
+  
+paths:
+  /token:
+    post:
+      summary: Authorize the user by access token
+      tags: [auth]
+      security: [] 
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                access_key:
+                  type: string
+                  example: "abc123456"
+              required: [access_key]   
+              
+      responses:
+        200:
+          description: Access token response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                required: [token]    
+        401:
+          description: Bad Credentials
 
+  /claims/shipments:
+    get:
+      parameters:
+        - schema:
+            type: string
+            example: TRACK123456
+            minLength: 1
+          in: query
+          name: trackingCode
+          required: true
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: '1234567890'
+                    trackingCode:
+                      type: string
+                      example: TRACK123456
+                    isReturnShipment:
+                      type: boolean
+                      example: false
+                    isMultiShipmentOrder:
+                      type: boolean
+                      example: false
+                    carrierCode:
+                      type: string
+                      example: dhl
+                    carrierCountryCode:
+                      type: string
+                      example: de
+                    recipientCountryCode:
+                      type: string
+                      example: de
+                      nullable: true
+                    claimId:
+                      type: number
+                      nullable: true
+                    claimRequirements:
+                      type: object
+                      properties:
+                        isDeclarationOfRecipientRequired:
+                          type: boolean
+                          example: true
+                      required:
+                        - isDeclarationOfRecipientRequired
+                    claimSubmissionInfo:
+                      type: object
+                      properties:
+                        investigation:
+                          type: object
+                          properties:
+                            block:
+                              type: string
+                              nullable: true
+                            warning:
+                              type: string
+                              nullable: true
+                            deadline:
+                              type: object
+                              nullable: true
+                              properties:
+                                outcome:
+                                  type: string
+                                  enum:
+                                    - within
+                                    - early
+                                    - past
+                              required:
+                                - outcome
+                          required:
+                            - block
+                            - warning
+                            - deadline
+                        whole_damage:
+                          type: object
+                          properties:
+                            block:
+                              type: string
+                              nullable: true
+                            warning:
+                              type: string
+                              nullable: true
+                            deadline:
+                              type: object
+                              nullable: true
+                              properties:
+                                outcome:
+                                  type: string
+                                  enum:
+                                    - within
+                                    - early
+                                    - past
+                              required:
+                                - outcome
+                          required:
+                            - block
+                            - warning
+                            - deadline
+                        partial_damage:
+                          type: object
+                          properties:
+                            block:
+                              type: string
+                              nullable: true
+                            warning:
+                              type: string
+                              nullable: true
+                            deadline:
+                              type: object
+                              nullable: true
+                              properties:
+                                outcome:
+                                  type: string
+                                  enum:
+                                    - within
+                                    - early
+                                    - past
+                              required:
+                                - outcome
+                          required:
+                            - block
+                            - warning
+                            - deadline
+                        missing_item:
+                          type: object
+                          properties:
+                            block:
+                              type: string
+                              nullable: true
+                            warning:
+                              type: string
+                              nullable: true
+                            deadline:
+                              type: object
+                              nullable: true
+                              properties:
+                                outcome:
+                                  type: string
+                                  enum:
+                                    - within
+                                    - early
+                                    - past
+                              required:
+                                - outcome
+                          required:
+                            - block
+                            - warning
+                            - deadline
+                        cash_on_delivery:
+                          type: object
+                          properties:
+                            block:
+                              type: string
+                              nullable: true
+                            warning:
+                              type: string
+                              nullable: true
+                            deadline:
+                              type: object
+                              nullable: true
+                              properties:
+                                outcome:
+                                  type: string
+                                  enum:
+                                    - within
+                                    - early
+                                    - past
+                              required:
+                                - outcome
+                          required:
+                            - block
+                            - warning
+                            - deadline
+                      required:
+                        - investigation
+                        - whole_damage
+                        - partial_damage
+                        - missing_item
+                        - cash_on_delivery
+                    lastEvent:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          example: Delivered
+                        meaning:
+                          type: string
+                          enum:
+                            - good
+                            - neutral
+                            - bad
+                            - really_bad
+                        time:
+                          type: string
+                          format: date-time
+                      required:
+                        - type
+                        - meaning
+                        - time
+                    createdAt:
+                      type: string
+                      format: date-time
+                    availableDorLanguages:
+                      type: array
+                      items:
+                        type: string
+                      example:
+                        - de
+                        - en
+                  required:
+                    - id
+                    - trackingCode
+                    - carrierCode
+                    - carrierCountryCode
+                    - isReturnShipment
+                    - isMultiShipmentOrder
+                    - claimId
+                    - lastEvent
+                    - recipientCountryCode
+                    - claimRequirements
+                    - claimSubmissionInfo
+                    - createdAt
+                    - availableDorLanguages
+  /claims/{id}:
+    get:
+      parameters:
+        - schema:
+            type: string
+            pattern: ^\d+$
+          in: path
+          name: id
+          required: true
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 12345
+                  claimType:
+                    type: string
+                    enum:
+                      - investigation
+                      - partial_damage
+                      - whole_damage
+                      - missing_item
+                      - cash_on_delivery
+                    example: investigation
+                  status:
+                    type: string
+                    enum:
+                      - submitted
+                      - action_required
+                      - in_progress
+                      - accepted
+                      - credit_note_pending
+                      - successful
+                      - declined
+                      - draft
+                      - resubmitted
+                      - escalating
+                      - payment_overdue
+                      - incorrect_payment
+                      - paid
+                    example: submitted
+                  shipmentId:
+                    type: string
+                    description: ID of the shipment
+                    example: '1234567890'
+                    nullable: true
+                  carrierCode:
+                    type: string
+                    example: dhl
+                  carrierCountryCode:
+                    type: string
+                    example: de
+                  netValue:
+                    type: number
+                    example: 54.99
+                    nullable: true
+                  netValueCurrency:
+                    type: string
+                    enum:
+                      - CHF
+                      - CZK
+                      - GBP
+                      - PLN
+                      - SEK
+                      - DKK
+                      - NOK
+                      - RON
+                      - HUF
+                      - USD
+                      - EUR
+                    example: EUR
+                    nullable: true
+                  createdAt:
+                    type: string
+                    format: date-time
+                  submittedAt:
+                    type: string
+                    format: date-time
+                    nullable: true
+                required:
+                  - id
+                  - claimType
+                  - status
+                  - carrierCode
+                  - carrierCountryCode
+                  - netValue
+                  - netValueCurrency
+                  - createdAt
+                  - submittedAt
+  /claims:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                claimType:
+                  type: string
+                  enum:
+                    - investigation
+                    - partial_damage
+                    - whole_damage
+                    - missing_item
+                    - cash_on_delivery
+                  example: investigation
+                shipmentId:
+                  type: string
+                  description: ID of the shipment
+                  example: '1234567890'
+                invoiceDocument:
+                  type: integer
+                  example: 21200
+                declarationOfRecipient:
+                  type: integer
+                  example: 21200
+                picturesOfDamage:
+                  type: array
+                  items:
+                    type: integer
+                    example: 21200
+                  description: List of picture files documenting the damage
+                netValue:
+                  type: number
+                  example: 54.99
+                netValueCurrency:
+                  type: string
+                  enum:
+                    - CHF
+                    - CZK
+                    - GBP
+                    - PLN
+                    - SEK
+                    - DKK
+                    - NOK
+                    - RON
+                    - HUF
+                    - USD
+                    - EUR
+                  example: EUR
+                shopClaimId:
+                  type: string
+                  nullable: true
+                  description: Shop's internal claim ID, if available
+                  example: '12345'
+                submittedBy:
+                  type: string
+                  nullable: true
+                  description: User who submitted the claim, if available
+                  example: bob@company.com
+              required:
+                - claimType
+                - shipmentId
+                - netValue
+                - netValueCurrency
+        required: true
+      responses:
+        '201':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 12345
+                  claimType:
+                    type: string
+                    enum:
+                      - investigation
+                      - partial_damage
+                      - whole_damage
+                      - missing_item
+                      - cash_on_delivery
+                    example: investigation
+                  status:
+                    type: string
+                    enum:
+                      - submitted
+                      - action_required
+                      - in_progress
+                      - accepted
+                      - credit_note_pending
+                      - successful
+                      - declined
+                      - draft
+                      - resubmitted
+                      - escalating
+                      - payment_overdue
+                      - incorrect_payment
+                      - paid
+                    example: submitted
+                  shipmentId:
+                    type: string
+                    description: ID of the shipment
+                    example: '1234567890'
+                    nullable: true
+                  carrierCode:
+                    type: string
+                    example: dhl
+                  carrierCountryCode:
+                    type: string
+                    example: de
+                  netValue:
+                    type: number
+                    example: 54.99
+                    nullable: true
+                  netValueCurrency:
+                    type: string
+                    enum:
+                      - CHF
+                      - CZK
+                      - GBP
+                      - PLN
+                      - SEK
+                      - DKK
+                      - NOK
+                      - RON
+                      - HUF
+                      - USD
+                      - EUR
+                    example: EUR
+                    nullable: true
+                  createdAt:
+                    type: string
+                    format: date-time
+                  submittedAt:
+                    type: string
+                    format: date-time
+                    nullable: true
+                required:
+                  - id
+                  - claimType
+                  - status
+                  - carrierCode
+                  - carrierCountryCode
+                  - netValue
+                  - netValueCurrency
+                  - createdAt
+                  - submittedAt
+        '400':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+        '403':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+        '404':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+        '409':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+  /claims/drafts:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                claimType:
+                  type: string
+                  enum:
+                    - investigation
+                    - partial_damage
+                    - whole_damage
+                    - missing_item
+                    - cash_on_delivery
+                  example: investigation
+                shipmentId:
+                  type: string
+                  description: ID of the shipment
+                  example: '1234567890'
+                invoiceDocument:
+                  type: integer
+                  example: 21200
+                declarationOfRecipient:
+                  type: integer
+                  example: 21200
+                picturesOfDamage:
+                  type: array
+                  items:
+                    type: integer
+                    example: 21200
+                  description: List of picture files documenting the damage
+                netValue:
+                  type: number
+                  example: 54.99
+                  nullable: true
+                netValueCurrency:
+                  type: string
+                  enum:
+                    - CHF
+                    - CZK
+                    - GBP
+                    - PLN
+                    - SEK
+                    - DKK
+                    - NOK
+                    - RON
+                    - HUF
+                    - USD
+                    - EUR
+                  example: EUR
+                  nullable: true
+                shopClaimId:
+                  type: string
+                  nullable: true
+                  description: Shop's internal claim ID, if available
+                  example: '12345'
+                submittedBy:
+                  type: string
+                  nullable: true
+                  description: User who submitted the claim, if available
+                  example: bob@company.com
+              required:
+                - claimType
+                - shipmentId
+        required: true
+      responses:
+        '201':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 12345
+                  claimType:
+                    type: string
+                    enum:
+                      - investigation
+                      - partial_damage
+                      - whole_damage
+                      - missing_item
+                      - cash_on_delivery
+                    example: investigation
+                  status:
+                    type: string
+                    enum:
+                      - submitted
+                      - action_required
+                      - in_progress
+                      - accepted
+                      - credit_note_pending
+                      - successful
+                      - declined
+                      - draft
+                      - resubmitted
+                      - escalating
+                      - payment_overdue
+                      - incorrect_payment
+                      - paid
+                    example: submitted
+                  shipmentId:
+                    type: string
+                    description: ID of the shipment
+                    example: '1234567890'
+                    nullable: true
+                  carrierCode:
+                    type: string
+                    example: dhl
+                  carrierCountryCode:
+                    type: string
+                    example: de
+                  netValue:
+                    type: number
+                    example: 54.99
+                    nullable: true
+                  netValueCurrency:
+                    type: string
+                    enum:
+                      - CHF
+                      - CZK
+                      - GBP
+                      - PLN
+                      - SEK
+                      - DKK
+                      - NOK
+                      - RON
+                      - HUF
+                      - USD
+                      - EUR
+                    example: EUR
+                    nullable: true
+                  createdAt:
+                    type: string
+                    format: date-time
+                  submittedAt:
+                    type: string
+                    format: date-time
+                    nullable: true
+                required:
+                  - id
+                  - claimType
+                  - status
+                  - carrierCode
+                  - carrierCountryCode
+                  - netValue
+                  - netValueCurrency
+                  - createdAt
+                  - submittedAt
+        '400':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+        '403':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+        '404':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+        '409':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+  /claims/files:
+    post:
+      tags:
+        - files
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+        required: true
+      responses:
+        '201':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 21200
+                  name:
+                    type: string
+                    example: test.pdf
+                  size:
+                    type: number
+                    nullable: true
+                  mimeType:
+                    type: string
+                    example: application/pdf
+                  publicUrl:
+                    type: string
+                    nullable: true
+                    example: https://claim.me/files/21200/test.pdf?token=abc123
+                  createdAt:
+                    type: string
+                    format: date-time
+                required:
+                  - id
+                  - name
+                  - createdAt
+                  - size
+                  - publicUrl
+                  - mimeType
+  /claims/import-invoice:
+    post:
+      tags:
+        - files
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipmentId:
+                  type: string
+                  example: '1234567890'
+              required:
+                - shipmentId
+        required: true
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - not_found
+                  file:
+                    enum:
+                      - null
+                    nullable: true
+                required:
+                  - status
+                  - file
+        '201':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - found
+                  file:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 21200
+                      name:
+                        type: string
+                        example: test.pdf
+                      size:
+                        type: number
+                        nullable: true
+                      mimeType:
+                        type: string
+                        example: application/pdf
+                      publicUrl:
+                        type: string
+                        nullable: true
+                        example: https://claim.me/files/21200/test.pdf?token=abc123
+                      createdAt:
+                        type: string
+                        format: date-time
+                    required:
+                      - id
+                      - name
+                      - createdAt
+                      - size
+                      - publicUrl
+                      - mimeType
+                required:
+                  - status
+                  - file
+  /claims/files/{id}/invoice-extraction:
+    get:
+      tags:
+        - files
+      parameters:
+        - schema:
+            type: string
+            pattern: ^\d+$
+          in: path
+          name: id
+          required: true
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  netValue:
+                    type: number
+                    example: 54.99
+                    nullable: true
+                  netValueCurrency:
+                    type: string
+                    enum:
+                      - CHF
+                      - CZK
+                      - GBP
+                      - PLN
+                      - SEK
+                      - DKK
+                      - NOK
+                      - RON
+                      - HUF
+                      - USD
+                      - EUR
+                    example: EUR
+                    nullable: true
+  /claims/dor-signing-links:
+    post:
+      tags:
+        - consumer-links
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipmentId:
+                  type: string
+                  description: ID of the shipment
+                  example: '1234567890'
+                language:
+                  type: string
+                  example: en
+                  description: Language code for the DOR signing link
+              required:
+                - shipmentId
+                - language
+        required: true
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  signingLink:
+                    type: string
+                    example: https://claim.me/sign/41abc3d2
+                required:
+                  - signingLink
+  /claims/picture-upload-links:
+    post:
+      tags:
+        - consumer-links
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipmentId:
+                  type: string
+                  description: ID of the shipment
+                  example: '1234567890'
+              required:
+                - shipmentId
+        required: true
+      responses:
+        '201':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pictureUploadLink:
+                    type: string
+                    example: https://claim.me/upload-pictures/41abc3d2
+                required:
+                  - pictureUploadLink
