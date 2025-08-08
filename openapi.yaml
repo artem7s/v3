@@ -812,7 +812,7 @@ paths:
                   - size
                   - publicUrl
                   - mimeType
-  /claims/import-invoice:
+  /claims/files/import-invoice:
     post:
       tags:
         - files
