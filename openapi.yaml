@@ -45,6 +45,36 @@ paths:
         401:
           description: Bad Credentials
 
+  /claims/requests:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trackingCode:
+                  type: string
+                  example: TRACK123456
+                orderId:
+                  type: string
+                  example: '000123456'
+              required: [trackingCode, orderId]    
+        required: true
+        
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: 
+                    type: number
+                    example: 123
+                required: [id]  
+
   /claims/shipments:
     get:
       parameters:
